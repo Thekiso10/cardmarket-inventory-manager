@@ -1,4 +1,4 @@
-import type pg from "pg";
+import type { PrismaClient } from "@prisma/client";
 import type { CardmarketOffer } from "../types/cardmarket-offer.js";
 import { normalizeCardName, normalizeObservation } from "../utils/text.js";
 
@@ -7,79 +7,48 @@ export type UpsertSummary = {
 };
 
 export class CardmarketOfferRepository {
-  constructor(private readonly pool: pg.Pool) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async upsertMany(offers: CardmarketOffer[]): Promise<UpsertSummary> {
-    const client = await this.pool.connect();
-    try {
-      await client.query("BEGIN");
-      for (const offer of offers) {
-        await client.query(
-          `
-            INSERT INTO cardmarket_offers (
-              card_name,
-              normalized_card_name,
-              is_foil,
-              sale_url,
-              collection,
-              rarity,
-              language,
-              condition,
-              observation,
-              normalized_observation,
-              price_cents,
-              price_currency,
-              quantity,
-              source_article_id,
-              source_page,
-              last_seen_at,
-              updated_at
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            ON CONFLICT (normalized_card_name, is_foil, normalized_observation)
-            DO UPDATE SET
-              card_name = EXCLUDED.card_name,
-              sale_url = EXCLUDED.sale_url,
-              collection = EXCLUDED.collection,
-              rarity = EXCLUDED.rarity,
-              language = EXCLUDED.language,
-              condition = EXCLUDED.condition,
-              observation = EXCLUDED.observation,
-              normalized_observation = EXCLUDED.normalized_observation,
-              price_cents = EXCLUDED.price_cents,
-              price_currency = EXCLUDED.price_currency,
-              quantity = EXCLUDED.quantity,
-              source_article_id = EXCLUDED.source_article_id,
-              source_page = EXCLUDED.source_page,
-              last_seen_at = CURRENT_TIMESTAMP,
-              updated_at = CURRENT_TIMESTAMP
-          `,
-          [
-            offer.cardName,
-            normalizeCardName(offer.cardName),
-            offer.isFoil,
-            offer.saleUrl,
-            offer.collection,
-            offer.rarity,
-            offer.language,
-            offer.condition,
-            offer.observation,
-            normalizeObservation(offer.observation),
-            offer.priceCents,
-            offer.priceCurrency,
-            offer.quantity,
-            offer.sourceArticleId,
-            offer.sourcePage
-          ]
-        );
-      }
-      await client.query("COMMIT");
-      return { processed: offers.length };
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
+    const operations = offers.map((offer) => {
+      const normalizedCardName = normalizeCardName(offer.cardName);
+      const normalizedObservation = normalizeObservation(offer.observation);
+
+      const data = {
+        card_name: offer.cardName,
+        sale_url: offer.saleUrl,
+        collection: offer.collection,
+        rarity: offer.rarity,
+        language: offer.language,
+        condition: offer.condition,
+        observation: offer.observation,
+        price_cents: offer.priceCents,
+        price_currency: offer.priceCurrency,
+        quantity: offer.quantity,
+        source_article_id: offer.sourceArticleId,
+        source_page: offer.sourcePage,
+        last_seen_at: new Date()
+      };
+
+      return this.prisma.cardmarketOffer.upsert({
+        where: {
+          normalized_card_name_is_foil_normalized_observation: {
+            normalized_card_name: normalizedCardName,
+            is_foil: offer.isFoil,
+            normalized_observation: normalizedObservation
+          }
+        },
+        create: {
+          normalized_card_name: normalizedCardName,
+          is_foil: offer.isFoil,
+          normalized_observation: normalizedObservation,
+          ...data
+        },
+        update: data
+      });
+    });
+
+    await this.prisma.$transaction(operations);
+    return { processed: offers.length };
   }
 }

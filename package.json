@@ -7,25 +7,29 @@
     "node": ">=22 <23"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "prisma generate && tsc -p tsconfig.json",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
     "sync": "tsx src/index.ts sync",
     "scrape": "tsx src/index.ts scrape",
-    "liquibase:update": "node scripts/run-liquibase.mjs update",
-    "liquibase:status": "node scripts/run-liquibase.mjs status",
-    "liquibase:rollback": "node scripts/run-liquibase.mjs rollback-count 1"
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
+    "db:push": "prisma db push"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "dotenv": "^16.4.7",
-    "pg": "^8.13.1",
+    "pg": "^8.20.0",
     "puppeteer": "^24.42.0",
     "puppeteer-real-browser": "^1.4.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "@types/pg": "^8.11.10",
+    "@types/pg": "^8.20.0",
+    "prisma": "^7.8.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }

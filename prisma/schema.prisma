@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model CardmarketOffer {
+  card_name              String
+  normalized_card_name   String
+  is_foil                Boolean   @default(false)
+  sale_url               String
+  collection             String?
+  rarity                 String?
+  language               String?
+  condition              String?
+  observation            String?
+  normalized_observation String    @default("")
+  price_cents            Int
+  price_currency         String    @default("EUR")
+  quantity               Int
+  source_article_id      BigInt?
+  source_page            Int?
+  last_seen_at           DateTime  @default(now()) @db.Timestamptz(6)
+  created_at             DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@id([normalized_card_name, is_foil, normalized_observation])
+  @@index([card_name], map: "idx_cardmarket_offers_card_name")
+  @@map("cardmarket_offers")
+}

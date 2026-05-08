@@ -6,3 +6,5 @@ dist/
 .liquibase/
 *.log
 package-lock.json
+
+/src/generated/prisma

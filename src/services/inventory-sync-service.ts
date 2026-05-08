@@ -1,7 +1,7 @@
 import { launchBrowser } from "../browser/launch-browser.js";
 import { saveCookies } from "../browser/cookies.js";
 import { config } from "../config/env.js";
-import { createPool } from "../db/pool.js";
+import { createPrismaClient } from "../db/prisma.js";
 import { logger } from "../logger.js";
 import { CardmarketOfferRepository } from "../repositories/cardmarket-offer-repository.js";
 import { CardmarketScraper } from "../scraper/cardmarket-scraper.js";
@@ -42,12 +42,12 @@ export class InventorySyncService {
         return;
       }
 
-      const pool = createPool();
+      const prisma = createPrismaClient();
       try {
-        const summary = await new CardmarketOfferRepository(pool).upsertMany(offers);
+        const summary = await new CardmarketOfferRepository(prisma).upsertMany(offers);
         logger.info("Sincronizacion completada", summary);
       } finally {
-        await pool.end();
+        await prisma.$disconnect();
       }
     } finally {
       await saveCookies(page, config.scraper.cookiesFile);
