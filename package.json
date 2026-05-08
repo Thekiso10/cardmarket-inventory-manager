@@ -1,0 +1,32 @@
+{
+  "name": "cardmarket-inventory-manager",
+  "version": "0.1.0",
+  "description": "Scraper de ofertas publicas de Cardmarket y sincronizacion con PostgreSQL/Supabase.",
+  "type": "module",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "sync": "tsx src/index.ts sync",
+    "scrape": "tsx src/index.ts scrape",
+    "liquibase:update": "node scripts/run-liquibase.mjs update",
+    "liquibase:status": "node scripts/run-liquibase.mjs status",
+    "liquibase:rollback": "node scripts/run-liquibase.mjs rollback-count 1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "pg": "^8.13.1",
+    "puppeteer": "^24.42.0",
+    "puppeteer-real-browser": "^1.4.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
