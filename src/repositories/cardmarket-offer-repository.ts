@@ -110,7 +110,10 @@ export class CardmarketOfferRepository {
     await fs.writeFile("audit-log.json", JSON.stringify(auditLog, null, 2), "utf-8");
 
     if (operations.length > 0) {
-      await this.prisma.$transaction(operations);
+      await this.prisma.$transaction(operations, {
+        maxWait: 15000, // default: 2000
+        timeout: 120000, // default: 5000 (120s para transacciones muy largas)
+      });
     }
 
     return {
