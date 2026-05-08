@@ -1,7 +1,7 @@
 import type { CardmarketOffer, ScrapePageResult } from "../types/cardmarket-offer.js";
 import { parseEuroPriceToCents } from "../utils/money.js";
 
-type RawOffer = Omit<CardmarketOffer, "priceCents" | "priceCurrency" | "sourcePage"> & {
+export type RawOffer = Omit<CardmarketOffer, "priceCents" | "priceCurrency" | "sourcePage"> & {
   priceText: string;
 };
 

@@ -22,10 +22,12 @@ const envSchema = z.object({
   CARDMARKET_OFFERS_URL: z.string().url(),
   CARDMARKET_BASE_URL: z.string().url().default("https://www.cardmarket.com"),
   SCRAPER_HEADLESS: booleanFromString.default("false"),
-  SCRAPER_PAGE_DELAY_MS: numberFromString.default("4500"),
+  SCRAPER_PAGE_DELAY_MS: numberFromString.default("1500"),
   SCRAPER_MAX_PAGES: numberFromString.default("0"),
   SCRAPER_START_PAGE: numberFromString.default("1"),
   SCRAPER_DRY_RUN: booleanFromString.default("true"),
+  SCRAPER_RETRY_MAX_ATTEMPTS: numberFromString.default("5"),
+  SCRAPER_RETRY_DELAY_MS: numberFromString.default("10000"),
   SCRAPER_COOKIES_FILE: z.string().default(".cardmarket-cookies.json"),
   DATABASE_URL: z.string().url()
 });
@@ -43,7 +45,9 @@ export const config = {
     maxPages: parsedEnv.SCRAPER_MAX_PAGES,
     startPage: parsedEnv.SCRAPER_START_PAGE,
     dryRun: parsedEnv.SCRAPER_DRY_RUN,
-    cookiesFile: parsedEnv.SCRAPER_COOKIES_FILE
+    cookiesFile: parsedEnv.SCRAPER_COOKIES_FILE,
+    retryMaxAttempts: parsedEnv.SCRAPER_RETRY_MAX_ATTEMPTS,
+    retryDelayMs: parsedEnv.SCRAPER_RETRY_DELAY_MS
   },
   db: {
     url: parsedEnv.DATABASE_URL

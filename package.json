@@ -8,8 +8,6 @@
   },
   "scripts": {
     "build": "prisma generate && tsc -p tsconfig.json",
-    "dev": "tsx src/index.ts",
-    "start": "node dist/index.js",
     "sync": "tsx src/index.ts sync",
     "scrape": "tsx src/index.ts scrape",
     "db:migrate": "prisma migrate dev",
