@@ -44,8 +44,12 @@ export class InventorySyncService {
 
       const prisma = createPrismaClient();
       try {
-        const summary = await new CardmarketOfferRepository(prisma).upsertMany(offers);
-        logger.info("Sincronizacion completada", summary);
+        const summary = await new CardmarketOfferRepository(prisma).syncInventory(offers);
+        logger.info("Sincronizacion completada", { 
+          creadas: summary.created, 
+          actualizadas: summary.updated, 
+          borradas: summary.deleted 
+        });
       } finally {
         await prisma.$disconnect();
       }

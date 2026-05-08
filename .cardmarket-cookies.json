@@ -1,7 +1,7 @@
 [
   {
     "name": "_cfuvid",
-    "value": "qxjwtSDGz.MrRCGiTCG1lZVhAAObs82qcTtxQk0ZNDA-1778264973.9369051-1.0.1.1-uOoeofiU1yZWAIqXbQcXTkFPqo2_qTvkEdxAzyU1H6M",
+    "value": "nedfUIOuSgtnIMfqIhgCmXfyJC.ctv_wKE0flOwQsa4-1778266996.0148375-1.0.1.1-uA9HqGIba.LHTuloBKmULYIDLeSWY_NnDQwb849aCMs",
     "domain": ".cardmarket.com",
     "path": "/",
     "expires": -1,
@@ -10,6 +10,19 @@
     "secure": true,
     "session": true,
     "sameSite": "None",
+    "priority": "Medium",
+    "sourceScheme": "Secure"
+  },
+  {
+    "name": "cookie_settings",
+    "value": "preferences%3D0%2Cstatistics%3D0%2Cmarketing%3D0",
+    "domain": "www.cardmarket.com",
+    "path": "/",
+    "expires": 1786213896.949454,
+    "size": 63,
+    "httpOnly": true,
+    "secure": true,
+    "session": false,
     "priority": "Medium",
     "sourceScheme": "Secure"
   },
@@ -28,24 +41,11 @@
   },
   {
     "name": "__cf_bm",
-    "value": "TvMcTdEvHxnonyWrnSHniLA5Qom4bezy.BL.OmoylV0-1778265091.8288398-1.0.1.1-U5kmGAf2DjNkD7ozOLaZ0_xMc.7VTBLQeJpJWx6dIcJzxur_FuTvB8UsRW3Gw4opmS2PUs0bfgLjxGB.tq8Oaiuo6JnhyMYosX8NRTC7jWM1fdEoadRT_3Ky72H9GIjz",
+    "value": "Ore7yd4BBW3WpitHVwelNaEgsNP6kwQIyC.pmiQO2Y0-1778266996.0148375-1.0.1.1-fGaRCJcwmvg0x1_T9nBGj9mqpqVJstmUCIJ.YTeTDu.CW5Qu0hVULjaSfI.Zf7_3fWkTCXSFPXx7KXgab1PwLwBqMpBKrxrMtBMKSrG828W_daAIbLbCE3jsZXWySuFE",
     "domain": ".cardmarket.com",
     "path": "/",
-    "expires": 1778266892.195067,
+    "expires": 1778268797.015776,
     "size": 206,
-    "httpOnly": true,
-    "secure": true,
-    "session": false,
-    "priority": "Medium",
-    "sourceScheme": "Secure"
-  },
-  {
-    "name": "cookie_settings",
-    "value": "preferences%3D0%2Cstatistics%3D0%2Cmarketing%3D0",
-    "domain": "www.cardmarket.com",
-    "path": "/",
-    "expires": 1786213896.949454,
-    "size": 63,
     "httpOnly": true,
     "secure": true,
     "session": false,
