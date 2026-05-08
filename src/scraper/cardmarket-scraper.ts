@@ -48,7 +48,12 @@ export class CardmarketScraper {
     await this.page.waitForSelector("#UserOffersTable .article-row", { timeout: 120_000 });
     await delay(config.scraper.pageDelayMs);
 
-    const rawResult = await this.page.evaluate(extractOffersFromDocument, config.cardmarket.baseUrl);
+    // esbuild/tsx inyecta "__name(fn, name)" helpers al compilar; definimos un no-op
+    // para que la función serializada funcione dentro del contexto del navegador.
+    const fnSource = extractOffersFromDocument.toString();
+    const rawResult = await this.page.evaluate(
+      `(() => { const __name = (fn) => fn; return (${fnSource})(${JSON.stringify(config.cardmarket.baseUrl)}); })()`
+    );
 
     return {
       hasNextPage: rawResult.hasNextPage,
