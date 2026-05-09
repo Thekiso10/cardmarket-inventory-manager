@@ -15,7 +15,21 @@ async function main(): Promise<void> {
     return;
   }
 
-  throw new Error(`Comando no soportado: ${command}. Usa "scrape" o "sync".`);
+  if (command === "upload") {
+    const fileArg = process.argv.find((arg) => arg.startsWith("--file="));
+    if (!fileArg) {
+      throw new Error("El comando 'upload' requiere el argumento --file=/ruta/al/csv");
+    }
+    const filePath = fileArg.split("=")[1];
+    
+    // Lazy load the service to avoid unnecessary imports if not used
+    const { CardUploadService } = await import("./services/card-upload-service.js");
+    const uploadService = new CardUploadService();
+    await uploadService.uploadCards(filePath);
+    return;
+  }
+
+  throw new Error(`Comando no soportado: ${command}. Usa "scrape", "sync" o "upload".`);
 }
 
 main().catch((error: unknown) => {

@@ -29,7 +29,11 @@ const envSchema = z.object({
   SCRAPER_RETRY_MAX_ATTEMPTS: numberFromString.default("5"),
   SCRAPER_RETRY_DELAY_MS: numberFromString.default("10000"),
   SCRAPER_COOKIES_FILE: z.string().default(".cardmarket-cookies.json"),
-  DATABASE_URL: z.string().url()
+  DATABASE_URL: z.string().url(),
+  CARDMARKET_USERNAME: z.string(),
+  CARDMARKET_PASSWORD: z.string(),
+  SELL_PRICE_DISCOUNT_PERCENTAGE: numberFromString.default("5"),
+  SELL_SUBMIT_DELAY_MS: numberFromString.default("2000")
 });
 
 const parsedEnv = envSchema.parse(process.env);
@@ -37,7 +41,9 @@ const parsedEnv = envSchema.parse(process.env);
 export const config = {
   cardmarket: {
     offersUrl: parsedEnv.CARDMARKET_OFFERS_URL,
-    baseUrl: parsedEnv.CARDMARKET_BASE_URL
+    baseUrl: parsedEnv.CARDMARKET_BASE_URL,
+    username: parsedEnv.CARDMARKET_USERNAME,
+    password: parsedEnv.CARDMARKET_PASSWORD
   },
   scraper: {
     headless: parsedEnv.SCRAPER_HEADLESS,
@@ -48,6 +54,10 @@ export const config = {
     cookiesFile: parsedEnv.SCRAPER_COOKIES_FILE,
     retryMaxAttempts: parsedEnv.SCRAPER_RETRY_MAX_ATTEMPTS,
     retryDelayMs: parsedEnv.SCRAPER_RETRY_DELAY_MS
+  },
+  sell: {
+    priceDiscountPercentage: parsedEnv.SELL_PRICE_DISCOUNT_PERCENTAGE,
+    submitDelayMs: parsedEnv.SELL_SUBMIT_DELAY_MS
   },
   db: {
     url: parsedEnv.DATABASE_URL
