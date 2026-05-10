@@ -32,7 +32,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   CARDMARKET_USERNAME: z.string(),
   CARDMARKET_PASSWORD: z.string(),
-  SELL_PRICE_DISCOUNT_PERCENTAGE: numberFromString.default("5"),
+  SELL_PRICE_DISCOUNT_PERCENTAGE: numberFromString.default("2"),
   SELL_SUBMIT_DELAY_MS: numberFromString.default("2000"),
   SELL_MIN_PRICE: numberFromString.default("0.03")
 });

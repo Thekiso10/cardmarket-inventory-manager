@@ -40,7 +40,7 @@ export class CardmarketPricing {
     const finalPrice = average * (1 - (discountPercentage / 100));
 
     const minPrice = config.sell.minPrice;
-    const safePrice = Math.max(finalPrice, minPrice);
+    const safePrice = finalPrice <= minPrice ? minPrice : finalPrice;
 
     if (finalPrice !== safePrice) {
       logger.info(`El precio calculado (${finalPrice.toFixed(2)}) es menor al mínimo (${minPrice}). Se usará ${safePrice.toFixed(2)}.`);
