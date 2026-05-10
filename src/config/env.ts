@@ -18,6 +18,19 @@ const numberFromString = z
     return parsed;
   });
 
+// Para valores que pueden ser decimales (precios, porcentajes)
+const floatFromString = z
+  .string()
+  .default("0")
+  .transform((value, ctx) => {
+    const parsed = Number.parseFloat(value);
+    if (Number.isNaN(parsed)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Numero invalido: ${value}` });
+      return z.NEVER;
+    }
+    return parsed;
+  });
+
 const envSchema = z.object({
   CARDMARKET_OFFERS_URL: z.string().url(),
   CARDMARKET_BASE_URL: z.string().url().default("https://www.cardmarket.com"),
@@ -32,9 +45,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   CARDMARKET_USERNAME: z.string(),
   CARDMARKET_PASSWORD: z.string(),
-  SELL_PRICE_DISCOUNT_PERCENTAGE: numberFromString.default("2"),
+  SELL_PRICE_DISCOUNT_PERCENTAGE: floatFromString.default("2"),
   SELL_SUBMIT_DELAY_MS: numberFromString.default("2000"),
-  SELL_MIN_PRICE: numberFromString.default("0.03")
+  SELL_MIN_PRICE: floatFromString.default("0.03")
 });
 
 const parsedEnv = envSchema.parse(process.env);
