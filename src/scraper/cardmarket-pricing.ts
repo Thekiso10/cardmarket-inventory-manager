@@ -39,9 +39,16 @@ export class CardmarketPricing {
     const discountPercentage = config.sell.priceDiscountPercentage;
     const finalPrice = average * (1 - (discountPercentage / 100));
 
+    const minPrice = config.sell.minPrice;
+    const safePrice = Math.max(finalPrice, minPrice);
+
+    if (finalPrice !== safePrice) {
+      logger.info(`El precio calculado (${finalPrice.toFixed(2)}) es menor al mínimo (${minPrice}). Se usará ${safePrice.toFixed(2)}.`);
+    }
+
     // Formatear a string con 2 decimales (ej. "0.05")
     // Se utilizará formato string para que sea insertado en el input
-    const formattedPrice = finalPrice.toFixed(2);
+    const formattedPrice = safePrice.toFixed(2);
     
     logger.info(`Calculo de precio: Suma=${sum.toFixed(2)}, Media=${average.toFixed(2)}, Descuento=${discountPercentage}%, Precio Final=${formattedPrice} €`);
 
