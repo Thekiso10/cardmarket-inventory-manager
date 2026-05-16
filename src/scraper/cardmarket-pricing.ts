@@ -9,7 +9,7 @@ export class CardmarketPricing {
     logger.info("Extrayendo ofertas para calcular el precio...");
 
     // Esperar a que la tabla cargue
-    await this.page.waitForSelector('#table .table-body', { timeout: 30_000 });
+    await this.page.waitForSelector('#table .table-body, .article-table .table-body', { timeout: 30_000 });
 
     const offers = await this.extractOffers();
 
@@ -57,8 +57,13 @@ export class CardmarketPricing {
 
   private async extractOffers(): Promise<Array<{ language: string, price: number }>> {
     return this.page.evaluate(() => {
-      // Tomar los primeros 20 elementos (las primeras 20 ofertas mostradas)
-      const rows = Array.from(document.querySelectorAll('#table .article-row')).slice(0, 20);
+      // Camino normal: la mayoria de paginas tienen la tabla principal con id="table".
+      // Respaldo: algunas paginas cargan la misma estructura sin ese id.
+      const tableRows = Array.from(document.querySelectorAll('#table .article-row'));
+      const rows = (tableRows.length > 0
+        ? tableRows
+        : Array.from(document.querySelectorAll('.article-table .article-row[id^="articleRow"]'))
+      ).slice(0, 20);
       const data: Array<{ language: string, price: number }> = [];
 
       for (const row of rows) {

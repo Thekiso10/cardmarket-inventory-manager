@@ -31,10 +31,13 @@ export class CardmarketSearch {
 
         await this.page.type('#ProductSearchInput', searchTerm);
 
-        // Esperar a que se muestre la caja de resultados
-        await this.page.waitForSelector('#AutoCompleteResult.show', { timeout: 60_000, visible: true });
-        // Dar un pequeño tiempo para que termine de cargar los resultados
-        await delay(1500);
+        // Cardmarket puede destruir el contexto al cambiar /en/ <-> /es/ o al
+        // navegar directamente al producto. Sondeamos URL y DOM para tolerarlo.
+        const searchOutcome = await this.waitForSearchOutcome(card);
+        if (searchOutcome === "product") {
+          logger.info("Cardmarket navego directamente a la pagina de la carta");
+          return true;
+        }
 
         // Extraer los resultados del DOM
         const results = await this.extractSearchResults();
@@ -93,6 +96,14 @@ export class CardmarketSearch {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
 
+        if (await this.recoverAfterPossibleNavigation(card)) {
+          logger.info("La busqueda provoco una navegacion al producto; se continua con la carta", {
+            card: card.Name,
+            url: this.page.url()
+          });
+          return true;
+        }
+
         if (attempt < maxAttempts) {
           logger.warn("Fallo durante la busqueda. Posible bloqueo de Cloudflare o timeout. Reintentando...", {
             attempt,
@@ -139,8 +150,79 @@ export class CardmarketSearch {
     return term;
   }
 
+  private async waitForSearchOutcome(card: CsvCard): Promise<"product" | "autocomplete" | "timeout"> {
+    const deadline = Date.now() + 60_000;
+
+    while (Date.now() < deadline) {
+      if (this.isCurrentProductPageForCard(card)) {
+        return "product";
+      }
+
+      try {
+        const hasAutocompleteResults = await this.page.evaluate(() => {
+          return document.querySelectorAll('#AutoCompleteResult.show .autocomplete-link[href*="/Products/Singles/"]').length > 0;
+        });
+
+        if (hasAutocompleteResults) {
+          return "autocomplete";
+        }
+      } catch (error) {
+        if (!this.isExecutionContextDestroyed(error)) {
+          throw error;
+        }
+      }
+
+      await delay(250);
+    }
+
+    return "timeout";
+  }
+
+  private async recoverAfterPossibleNavigation(card: CsvCard): Promise<boolean> {
+    for (let i = 0; i < 20; i++) {
+      if (this.isCurrentProductPageForCard(card)) {
+        return true;
+      }
+
+      await delay(250);
+    }
+
+    return false;
+  }
+
+  private isExecutionContextDestroyed(error: unknown): boolean {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return errorMessage.includes("Execution context was destroyed")
+      || errorMessage.includes("Cannot find context with specified id")
+      || errorMessage.includes("Protocol error");
+  }
+
+  private isCurrentProductPageForCard(card: CsvCard): boolean {
+    const currentUrl = this.page.url();
+    if (!currentUrl.includes("/Magic/Products/Singles/")) return false;
+
+    const csvSetNormalized = normalizeSetName(card["Set name"]);
+    const csvNameNormalized = normalizeSetName(this.sanitizeSearchTerm(card.Name));
+    const urlParts = currentUrl.split(/[/?#]/).filter(Boolean);
+    const singlesIndex = urlParts.indexOf("Singles");
+    const expansionSlug = singlesIndex !== -1 ? urlParts[singlesIndex + 1] ?? "" : "";
+    const cardSlug = singlesIndex !== -1 ? urlParts[singlesIndex + 2] ?? "" : "";
+
+    const slugSetNormalized = normalizeSetName(decodeURIComponent(expansionSlug));
+    const slugNameNormalized = normalizeSetName(decodeURIComponent(cardSlug));
+
+    const expansionMatch = slugSetNormalized === csvSetNormalized
+      || slugSetNormalized.includes(csvSetNormalized)
+      || csvSetNormalized.includes(slugSetNormalized);
+    const nameMatch = slugNameNormalized === csvNameNormalized
+      || slugNameNormalized.includes(csvNameNormalized)
+      || csvNameNormalized.includes(slugNameNormalized);
+
+    return expansionMatch && nameMatch;
+  }
+
   private async clickResult(index: number): Promise<boolean> {
-    const links = await this.page.$$('#AutoCompleteResult .autocomplete-link');
+    const links = await this.page.$$('#AutoCompleteResult .autocomplete-link[href*="/Products/Singles/"]');
     
     if (!links[index]) {
       throw new Error("No se pudo obtener el elemento DOM de la coincidencia");
@@ -166,7 +248,7 @@ export class CardmarketSearch {
    */
   private async extractSearchResults(): Promise<Array<{name: string, expansionSlug: string, collectorNumber: string}>> {
     return this.page.evaluate(() => {
-      const links = document.querySelectorAll('#AutoCompleteResult .autocomplete-link');
+      const links = document.querySelectorAll('#AutoCompleteResult .autocomplete-link[href*="/Products/Singles/"]');
       const data: Array<{name: string, expansionSlug: string, collectorNumber: string}> = [];
       
       links.forEach((link) => {
@@ -183,23 +265,26 @@ export class CardmarketSearch {
         // Si no tiene slug de expansion, es un link genérico (ej: "Búsqueda Avanzada", "Mostrar todos")
         if (!expansionSlug) return;
 
-        // Obtenemos el nombre de la carta
-        const nameEl = link.querySelector('.autocomplete-cell.name .text-truncate');
+        // Obtenemos el nombre de la carta. En algunas respuestas Cardmarket añade
+        // clases extra como autocomplete-text o cambia ligeramente el contenedor.
+        const nameEl = link.querySelector('.autocomplete-cell.name .text-truncate, .autocomplete-cell.name [class*="text-truncate"], .autocomplete-text .text-truncate');
 
         // El collector number está en dos formatos según viewport:
         // Desktop: <span class="text-muted small ms-2 d-none d-md-inline">261</span>
         // Mobile:  <div class="text-muted small d-md-none">261</div>  (sin ms-2, es un div)
         const numberDesktop = link.querySelector('.autocomplete-cell.name .text-muted.small.ms-2.d-none.d-md-inline');
         const numberMobile = link.querySelector('.autocomplete-cell.name .text-muted.small.d-md-none');
-        const numberEl = numberDesktop || numberMobile;
+        const numberEl = numberDesktop || numberMobile || Array.from(link.querySelectorAll('.autocomplete-cell.name .text-muted.small'))
+          .find((element) => /^\d+[a-z]?$/i.test(element.textContent?.trim() || ""));
 
-        if (nameEl) {
-          data.push({
-            name: nameEl.textContent?.trim() || "",
-            expansionSlug,
-            collectorNumber: numberEl?.textContent?.trim() || ""
-          });
-        }
+        const cardSlug = hrefParts[singlesIndex + 2] || "";
+        const nameFromHref = decodeURIComponent(cardSlug).replace(/-/g, " ").trim();
+
+        data.push({
+          name: nameEl?.textContent?.trim() || nameFromHref,
+          expansionSlug,
+          collectorNumber: numberEl?.textContent?.trim() || ""
+        });
       });
       
       return data;
