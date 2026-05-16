@@ -20,7 +20,7 @@ export class CardmarketSearch {
         await this.page.goto(config.cardmarket.baseUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
         
         // Esperar al input de búsqueda
-        await this.page.waitForSelector('#ProductSearchInput', { timeout: 60_000 });
+        await this.page.waitForSelector('#ProductSearchInput', { timeout: 120_000 });
         
         // Sanitizar el término de búsqueda:
         // Si el nombre tiene coma (ej: "Wilson, Refined Grizzly"), usar solo la parte
@@ -32,7 +32,7 @@ export class CardmarketSearch {
         await this.page.type('#ProductSearchInput', searchTerm);
 
         // Esperar a que se muestre la caja de resultados
-        await this.page.waitForSelector('#AutoCompleteResult.show', { timeout: 60_000, visible: true });
+        await this.page.waitForSelector('#AutoCompleteResult.show', { timeout: 120_000, visible: true });
         // Dar un pequeño tiempo para que termine de cargar los resultados
         await delay(1500);
 

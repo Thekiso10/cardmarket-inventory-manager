@@ -122,4 +122,29 @@ export class CardmarketOfferRepository {
       deleted: auditLog.deleted.length
     };
   }
+
+  /**
+   * Obtiene las cartas elegibles para actualización de precio.
+   * Se excluyen únicamente las cartas que cumplen ambas condiciones:
+   * 1. Su rareza está en la lista de excluidas (ej: Common/Común).
+   * 2. Su precio es igual o inferior al umbral mínimo.
+   * Por tanto, las cartas raras siempre se incluyen, y las comunes caras también.
+   */
+  async getCardsForPriceUpdate(
+    excludedRarities: string[],
+    minPriceCents: number
+  ) {
+    const allCards = await this.prisma.cardmarketOffer.findMany({
+      where: {
+        NOT: {
+          AND: [
+            { rarity: { in: excludedRarities } },
+            { price_cents: { lte: minPriceCents } }
+          ]
+        }
+      }
+    });
+
+    return allCards;
+  }
 }

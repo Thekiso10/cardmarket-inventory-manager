@@ -5,11 +5,6 @@ async function main(): Promise<void> {
   const command = process.argv[2] ?? "sync";
   const service = new InventorySyncService();
 
-  if (command === "scrape") {
-    await service.scrapeOnly();
-    return;
-  }
-
   if (command === "sync") {
     await service.sync();
     return;
@@ -29,7 +24,14 @@ async function main(): Promise<void> {
     return;
   }
 
-  throw new Error(`Comando no soportado: ${command}. Usa "scrape", "sync" o "upload".`);
+  if (command === "update-prices") {
+    const { PriceUpdateService } = await import("./services/price-update-service.js");
+    const updateService = new PriceUpdateService();
+    await updateService.updatePrices();
+    return;
+  }
+
+  throw new Error(`Comando no soportado: ${command}. Usa "sync", "upload" o "update-prices".`);
 }
 
 main().catch((error: unknown) => {

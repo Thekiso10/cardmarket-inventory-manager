@@ -47,7 +47,11 @@ const envSchema = z.object({
   CARDMARKET_PASSWORD: z.string(),
   SELL_PRICE_DISCOUNT_PERCENTAGE: floatFromString.default("2"),
   SELL_SUBMIT_DELAY_MS: numberFromString.default("2000"),
-  SELL_MIN_PRICE: floatFromString.default("0.03")
+  SELL_MIN_PRICE: floatFromString.default("0.03"),
+  UPDATE_PRICE_MIN_VALUE_CENTS: numberFromString.default("3"),
+  UPDATE_PRICE_EXCLUDED_RARITIES: z.string().default("Common,Común"),
+  UPDATE_PRICE_DELAY_MS: numberFromString.default("3000"),
+  UPDATE_PRICE_MIN_DIFF_CENTS: numberFromString.default("2")
 });
 
 const parsedEnv = envSchema.parse(process.env);
@@ -73,6 +77,12 @@ export const config = {
     priceDiscountPercentage: parsedEnv.SELL_PRICE_DISCOUNT_PERCENTAGE,
     submitDelayMs: parsedEnv.SELL_SUBMIT_DELAY_MS,
     minPrice: parsedEnv.SELL_MIN_PRICE
+  },
+  updatePrice: {
+    minValueCents: parsedEnv.UPDATE_PRICE_MIN_VALUE_CENTS,
+    excludedRarities: parsedEnv.UPDATE_PRICE_EXCLUDED_RARITIES.split(",").map(s => s.trim()),
+    delayMs: parsedEnv.UPDATE_PRICE_DELAY_MS,
+    minDiffCents: parsedEnv.UPDATE_PRICE_MIN_DIFF_CENTS
   },
   db: {
     url: parsedEnv.DATABASE_URL
