@@ -1,6 +1,6 @@
 {
   "name": "cardmarket-inventory-manager",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Scraper de ofertas publicas de Cardmarket y sincronizacion con PostgreSQL/Supabase.",
   "type": "module",
   "engines": {
