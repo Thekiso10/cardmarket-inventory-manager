@@ -45,7 +45,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   CARDMARKET_USERNAME: z.string(),
   CARDMARKET_PASSWORD: z.string(),
-  SELL_PRICE_DISCOUNT_PERCENTAGE: floatFromString.default("2"),
+  SELL_PRICE_INCREASED_PERCENTAGE: floatFromString.default("10"),
   SELL_SUBMIT_DELAY_MS: numberFromString.default("2000"),
   SELL_MIN_PRICE: floatFromString.default("0.03")
 });
@@ -70,7 +70,7 @@ export const config = {
     retryDelayMs: parsedEnv.SCRAPER_RETRY_DELAY_MS
   },
   sell: {
-    priceDiscountPercentage: parsedEnv.SELL_PRICE_DISCOUNT_PERCENTAGE,
+    priceIncreasePercentage: parsedEnv.SELL_PRICE_INCREASED_PERCENTAGE,
     submitDelayMs: parsedEnv.SELL_SUBMIT_DELAY_MS,
     minPrice: parsedEnv.SELL_MIN_PRICE
   },

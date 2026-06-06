@@ -60,7 +60,7 @@ Esta funcionalidad permite leer un archivo CSV (formato ManaBox/Scryfall) y pone
 **Configuración requerida en `.env`:**
 - `CARDMARKET_USERNAME`: Tu usuario de Cardmarket.
 - `CARDMARKET_PASSWORD`: Tu contraseña de Cardmarket.
-- `SELL_PRICE_DISCOUNT_PERCENTAGE`: Porcentaje de descuento a aplicar sobre la media de las 20 ofertas más baratas (excluyendo idiomas asiáticos). Ej: `5` para un 5%.
+- `SELL_PRICE_INCREASED_PERCENTAGE`: Porcentaje de incremento a aplicar sobre la media de las 20 ofertas más baratas (excluyendo idiomas asiáticos). Ej: `5` para un 5%.
 - `SELL_SUBMIT_DELAY_MS`: Tiempo de espera en milisegundos antes de confirmar la venta (ej: `2000`).
 
 **Ejecución:**
