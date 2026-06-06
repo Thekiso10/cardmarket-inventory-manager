@@ -26,6 +26,7 @@ export class CardUploadService {
 
     const { browser, page } = await launchBrowser();
     const failedCards: CsvCard[] = [];
+    const insertCards: CsvCard[] = [];
 
     try {
       // 1. Autenticacion
@@ -50,6 +51,7 @@ export class CardUploadService {
 
           const calculatedPrice = await pricingModule.calculatePrice();
           await sellModule.listForSale(card, calculatedPrice);
+          insertCards.push(card);
 
         } catch (error) {
           logger.error(`Error procesando la carta ${card.Name}: ${error instanceof Error ? error.message : String(error)}`);
@@ -63,8 +65,10 @@ export class CardUploadService {
 
       if (failedCards.length > 0) {
         this.writeFailedCards(failedCards);
-      } else {
-        logger.info("Proceso completado con exito. Todas las cartas fueron publicadas.");
+      }
+
+      if (insertCards.length > 0) {
+        this.writeInsertCards(insertCards);
       }
     }
   }
@@ -95,18 +99,27 @@ export class CardUploadService {
   private writeFailedCards(failedCards: CsvCard[]): void {
     const failedPath = "failed_uploads.csv";
     logger.warn(`Guardando ${failedCards.length} cartas fallidas en ${failedPath}`);
+    this.writeCars(failedCards, failedPath);
+  }
 
+  private writeInsertCards(insertCards: CsvCard[]): void {
+    const insertPath = "inserted_cards.csv";
+    logger.info(`Guardando ${insertCards.length} cartas insertadas en ${insertPath}`);
+    this.writeCars(insertCards, insertPath);
+  }
+
+  private writeCars(cardsList: CsvCard[], cardsPath: string) {
     // Solo extraemos las cabeceras del primer elemento para simplificar
-    if (failedCards.length === 0) return;
-    
-    const headers = Object.keys(failedCards[0]).join(",");
-    const rows = failedCards.map(card => {
+    if (cardsPath.length === 0) return;
+
+    const headers = Object.keys(cardsList[0]).join(",");
+    const rows = cardsList.map(card => {
       // Escapar comillas si es necesario
       return Object.values(card).map(val => `"${String(val).replace(/"/g, '""')}"`).join(",");
     });
 
     const csvContent = [headers, ...rows].join("\n");
-    fs.writeFileSync(failedPath, csvContent, "utf8");
-    logger.info(`Archivo ${failedPath} guardado correctamente.`);
+    fs.writeFileSync(cardsPath, csvContent, "utf8");
+    logger.info(`Archivo ${cardsPath} guardado correctamente.`);
   }
 }
